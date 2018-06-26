@@ -1,10 +1,3 @@
-# test_solutions.py
-"""Volume 1B: Testing.
-<Name>
-<Class>
-<Date>
-"""
-
 import solutions as soln
 import pytest
 
@@ -32,31 +25,131 @@ def test_month():
 
 # Problem 3: Test the operate function from solutions.py
 def test_operate():
-    
+    with pytest.raises(TypeError) as excinfo:
+        soln.operate(4, 0, 0)
+    assert excinfo.value.args[0] == "Oper should be a string"
+    # with pytest.raises(ValueError) as excinfo:
+    #     soln.operator(4, 0, "+-")
+    # assert excinfo.value.args[0] == "oper must be..., -', or '*'"
+    with pytest.raises(ValueError) as excinfo:
+        soln.operate(4, 0, ")")
+    assert excinfo.value.args[0] == "oper must be one of '+', '/', '-', or '*'"
+    assert soln.operate(1, 2, "+")==3, "Failed for adding"
+    assert soln.operate(1, 2, "-") == -1, "Failed for minusing"
+    assert soln.operate(1, 2, "*") == 2, "Failed for multiplying"
+    assert soln.operate(2, 1, "/") == 2, "Failed for dividing"
+    with pytest.raises(ZeroDivisionError) as excinfo:
+        soln.operate(4, 0, "/")
+    assert excinfo.value.args[0] == "division by zero is undefined"
 
-# def test_operator():
-#     pass
+# Problem 4: test cases for fraction.
+from soln import Fraction
 
-# Problem 3: Finish testing the complex number class
 @pytest.fixture
-def set_up_complex_nums():
-    number_1 = soln.ComplexNumber(1, 2)
-    number_2 = soln.ComplexNumber(5, 5)
-    number_3 = soln.ComplexNumber(2, 9)
-    return number_1, number_2, number_3
+def set_up_fractions():
+    frac_1_3 = soln.Fraction(1, 3)
+    frac_1_2 = soln.Fraction(1, 2)
+    frac_n2_3 = soln.Fraction(-2, 3)
+    return frac_1_3, frac_1_2, frac_n2_3
 
-def test_complex_addition(set_up_complex_nums):
-    number_1, number_2, number_3 = set_up_complex_nums
-    assert number_1 + number_2 == soln.ComplexNumber(6, 7)
-    assert number_1 + number_3 == soln.ComplexNumber(3, 11)
-    assert number_2 + number_3 == soln.ComplexNumber(7, 14)
-    assert number_3 + number_3 == soln.ComplexNumber(4, 18)
+def test_fraction_init(set_up_fractions):
+    frac_1_3, frac_1_2, frac_n2_3 = set_up_fractions
+    assert frac_1_3.numer == 1
+    assert frac_1_2.denom == 2
+    assert frac_n2_3.numer == -2
+    frac = soln.Fraction(30, 42) # 30/42 reduces to 5/7.
+    assert frac.numer == 5
+    assert frac.denom == 7
+    with pytest.raises(ZeroDivisionError) as excinfo:
+        soln.Fraction(1, 0)
+    assert excinfo.value.args[0] == "denominator cannot be zero"
+    with pytest.raises(TypeError) as excinfo:
+        soln.Fraction(1., 2.)
+    assert excinfo.value.args[0] == "numerator and denominator must be integers"
 
-def test_complex_multiplication(set_up_complex_nums):
-    number_1, number_2, number_3 = set_up_complex_nums
-    assert number_1 * number_2 == soln.ComplexNumber(-5, 15)
-    assert number_1 * number_3 == soln.ComplexNumber(-16, 13)
-    assert number_2 * number_3 == soln.ComplexNumber(-35, 55)
-    assert number_3 * number_3 == soln.ComplexNumber(-77, 36)
+def test_fraction_str(set_up_fractions):
+    frac_1_3, frac_1_2, frac_n2_3 = set_up_fractions
+    assert str(frac_1_3) == "1 / 3"
+    assert str(frac_1_2) == "1 / 2"
+    assert str(frac_n2_3) == "-2 / 3"
+    assert str(Fraction(2, 1)) == "2"
 
-# Problem 4: Write test cases for the Set game.
+def test_fraction_float(set_up_fractions):
+    frac_1_3, frac_1_2, frac_n2_3 = set_up_fractions
+    assert float(frac_1_3) == 1 / 3.
+    assert float(frac_1_2) == .5
+    assert float(frac_n2_3) == -2 / 3.
+
+def test_fraction_eq(set_up_fractions):
+    frac_1_3, frac_1_2, frac_n2_3 = set_up_fractions
+    assert frac_1_2 == soln.Fraction(1, 2)
+    assert frac_1_3 == soln.Fraction(2, 6)
+    assert frac_n2_3 == soln.Fraction(8, -12)
+    assert soln.Fraction(1, 2) == 2 / 4.
+
+def test_fraction_add(set_up_fractions):
+    frac_1_3, frac_1_2, frac_n2_3 = set_up_fractions
+    assert frac_1_3 + frac_1_2 == soln.Fraction(5, 6)
+    assert frac_1_3 + frac_n2_3 == soln.Fraction(-1, 3)
+    assert frac_1_2 + frac_n2_3 == soln.Fraction(-1, 6)
+
+def test_fraction_sub(set_up_fractions):
+    frac_1_3, frac_1_2, frac_n2_3 = set_up_fractions
+    assert frac_1_3 - frac_1_2 == soln.Fraction(-1, 6)
+    assert frac_1_3 - frac_n2_3 == soln.Fraction(3, 3)
+    assert frac_1_2 - frac_n2_3 == soln.Fraction(7, 6)
+
+def test_fraction_mult(set_up_fractions): 
+    frac_1_3, frac_1_2, frac_n2_3 = set_up_fractions
+    assert frac_1_3 * frac_1_2 == soln.Fraction(1, 6)
+    assert frac_1_3 * frac_n2_3 == soln.Fraction(-2, 9)
+    assert frac_1_2 * frac_n2_3 == soln.Fraction(-2, 6)
+
+def test_fraction_truediv(set_up_fractions):
+    frac_1_3, frac_1_2, frac_n2_3 = set_up_fractions
+    assert frac_1_3 / frac_1_2 == soln.Fraction(2, 3)
+    assert frac_1_3 / frac_n2_3 == soln.Fraction(-1, 2)
+    assert frac_1_2 / frac_n2_3 == soln.Fraction(-3, 4)
+    with pytest.raises(ZeroDivisionError) as excinfo:
+        frac_1_3 / soln.Fraction(0, 1)
+    assert excinfo.value.args[0] == "cannot divide by zero"
+
+# Problem 5: Write test cases for the Set game.
+@pytest.fixture
+def set_up_cards():
+    cards_1 = ["1022", "1122", "1020"]
+    cards_2 = ["1022", "1122", "0100", "2021",
+               "0010", "2201", "2111", "0020",
+               "1102", "0)10", "2110", "1020"]
+    cards_3 = ["1022", "1122", "0100", "2021",
+               "0010", "2201", "2111", "0020",
+               "1102", "010", "2110", "1020"]
+    cards_4 = ["1022", "1122", "0100", "2021",
+               "0010", "2201", "2111", "0020",
+               "1102", "0210", "2111", "1020"]
+    cards_5 = ["1022", "1122", "0100", "2021",
+               "0010", "2201", "2111", "0020",
+               "1102", "0510", "2110", "1020"]
+    cards_6 = ["1022", "1122", "0100", "2021",
+               "0010", "2201", "2111", "0020",
+               "1102", "0210", "2110", "1020"]
+    return cards_1, cards_2, cards_3, cards_4, cards_5, cards_6
+
+def test_set(set_up_cards):
+    cards_1, cards_2, cards_3, cards_4, cards_5, cards_6 = set_up_cards
+    assert soln.count_sets(cards_6) == 6, "Not counting cards correctly"
+    with pytest.raises(ValueError) as excinfo:
+        soln.count_sets(cards_1)
+    assert excinfo.value.args[0] == "there are not exactly 12 cards"
+    with pytest.raises(ValueError) as excinfo:
+        soln.count_sets(cards_2)
+    assert excinfo.value.args[0] == "one or more cards has a character other than 0, 1, or 2"
+    with pytest.raises(ValueError) as excinfo:
+        soln.count_sets(cards_3)
+    assert excinfo.value.args[0] == "one or more cards does not have exactly 4 digits"
+    with pytest.raises(ValueError) as excinfo:
+        soln.count_sets(cards_4)
+    assert excinfo.value.args[0] == "the cards are not all unique"
+    with pytest.raises(ValueError) as excinfo:
+        soln.count_sets(cards_5)
+    assert excinfo.value.args[0] == "one or more cards has a character other than 0, 1, or 2"
